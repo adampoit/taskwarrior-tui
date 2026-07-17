@@ -12,7 +12,7 @@ import shlex
 import subprocess
 
 DEFAULT_PROFILE = "default"
-DEFAULT_COMPONENTS = ("clippy", "rustfmt", "llvm-tools")
+DEFAULT_COMPONENTS = ("clippy", "rustfmt", "llvm-tools", "rust-analyzer")
 
 
 def split_csv(value: str) -> list[str]:

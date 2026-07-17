@@ -1,0 +1,11 @@
+version: 1
+upstream: kdheepak/taskwarrior-tui
+source: release:latest
+baseBranch: main
+syncBranch: sync/integration
+patchRefs:
+  - patch/sync
+  - patch/ci
+  - patch/rust-toolchain
+  - patch/profiles
+ciWorkflow: CI

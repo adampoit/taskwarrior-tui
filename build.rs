@@ -23,7 +23,13 @@ fn main() {
   let name = app.get_name().to_string();
   let outdir = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("completions/");
   dbg!(&outdir);
-  generate_to(Bash, &mut app, &name, &outdir).unwrap();
+  let bash_completion = generate_to(Bash, &mut app, &name, &outdir).unwrap();
+  let bash_contents = std::fs::read_to_string(&bash_completion).unwrap();
+  std::fs::write(
+    bash_completion,
+    format!("# shellcheck disable=SC2207 # Generated completion intentionally splits compgen output.\n{bash_contents}"),
+  )
+  .unwrap();
   generate_to(Zsh, &mut app, &name, &outdir).unwrap();
   generate_to(Fish, &mut app, &name, &outdir).unwrap();
   generate_to(PowerShell, &mut app, &name, &outdir).unwrap();

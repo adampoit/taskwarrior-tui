@@ -105,6 +105,30 @@ uda.taskwarrior-tui.report.next.filter=(status:pending or status:waiting)
 
 </details>
 
+### Profiles
+
+Named profiles keep separate Taskwarrior configuration and data directories behind an explicit, visible boundary. Create `~/.config/taskwarrior-tui/profiles.toml`:
+
+```toml
+default = "work"
+
+[profiles.work]
+taskrc = "~/.config/task/work.taskrc"
+taskdata = "~/.local/share/task/work"
+label = "Work"
+color = "yellow"
+
+[profiles.personal]
+taskrc = "~/.config/task/personal.taskrc"
+taskdata = "~/.local/share/task/personal"
+label = "Personal"
+color = "green"
+```
+
+Launch a profile with `taskwarrior-tui --profile personal`, list profiles with `taskwarrior-tui --list-profiles`, or press `p` in the TUI to switch. Switching starts a clean process against the selected database. Profiles isolate databases; they do not filter synchronization by project, tag, context, or report. Keep sync credentials in protected Taskwarrior configuration includes, not in `profiles.toml`.
+
+See the [advanced configuration documentation](https://kdheepak.com/taskwarrior-tui/configuration/advanced/) for path resolution and precedence details.
+
 ### References / Resources
 
 If you like `taskwarrior-tui`, please consider donating to

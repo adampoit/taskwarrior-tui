@@ -54,6 +54,7 @@ use crate::{
     project::ProjectsState,
     report::ReportsState,
   },
+  profile::ProfileMenuState,
   scrollbar::Scrollbar,
   table::{Row, Table, TableMode, TaskwarriorTuiTableState},
   task_report::TaskReportTable,
@@ -135,8 +136,19 @@ pub enum Mode {
   Calendar,
 }
 
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub enum ExitReason {
+  Quit,
+  SwitchProfile(String),
+}
+
+fn exit_reason_for_profile_selection(active_name: &str, selected_name: &str) -> Option<ExitReason> {
+  (active_name != selected_name).then(|| ExitReason::SwitchProfile(selected_name.to_string()))
+}
+
 pub struct TaskwarriorTui {
   pub should_quit: bool,
+  pub exit_reason: ExitReason,
   pub dirty: bool,
   pub task_table_state: TaskwarriorTuiTableState,
   pub current_context_filter: String,
@@ -176,6 +188,7 @@ pub struct TaskwarriorTui {
   pub projects: ProjectsState,
   pub contexts: ContextsState,
   pub reports: ReportsState,
+  pub profile_menu: Option<ProfileMenuState>,
   pub task_version: Versioning,
   pub error: Option<String>,
   pub event_loop: crate::event::EventLoop,
@@ -191,6 +204,10 @@ pub struct TaskwarriorTui {
 
 impl TaskwarriorTui {
   pub async fn new(report: &str, init_event_loop: bool) -> Result<Self> {
+    Self::new_with_profiles(report, init_event_loop, None).await
+  }
+
+  pub async fn new_with_profiles(report: &str, init_event_loop: bool, profile_menu: Option<ProfileMenuState>) -> Result<Self> {
     let task_exe = std::env::var("TASKWARRIOR_TUI_TASKWARRIOR_CLI").unwrap_or_else(|_| "task".to_string());
 
     let output = std::process::Command::new(&task_exe)
@@ -235,6 +252,7 @@ impl TaskwarriorTui {
 
     let mut app = Self {
       should_quit: false,
+      exit_reason: ExitReason::Quit,
       dirty: true,
       task_table_state: TaskwarriorTuiTableState::default(),
       tasks: vec![],
@@ -275,6 +293,7 @@ impl TaskwarriorTui {
       projects: ProjectsState::new(),
       contexts: ContextsState::new(),
       reports: ReportsState::new(),
+      profile_menu,
       task_version,
       error: None,
       event_loop,
@@ -365,7 +384,7 @@ impl TaskwarriorTui {
     self.event_loop.rx.recv().await
   }
 
-  pub async fn run(&mut self, terminal: &mut Terminal<CrosstermBackend<io::Stdout>>) -> Result<()> {
+  pub async fn run(&mut self, terminal: &mut Terminal<CrosstermBackend<io::Stdout>>) -> Result<ExitReason> {
     loop {
       if self.requires_redraw {
         terminal.clear()?;
@@ -397,7 +416,7 @@ impl TaskwarriorTui {
         break;
       }
     }
-    Ok(())
+    Ok(self.exit_reason.clone())
   }
 
   pub fn reset_command(&mut self) {
@@ -441,6 +460,12 @@ impl TaskwarriorTui {
       Mode::Tasks(Action::ReportMenu) => {
         self.reports.search.push_str(text);
         self.reports.table_state.select(Some(0));
+      }
+      Mode::Tasks(Action::ProfileMenu) => {
+        if let Some(menu) = &mut self.profile_menu {
+          menu.search.push_str(text);
+          menu.table_state.select(Some(0));
+        }
       }
       _ => {}
     }
@@ -503,7 +528,16 @@ impl TaskwarriorTui {
       Mode::Calendar => 3,
     };
     let navbar_block = Block::default().style(self.config.uda_style_navbar);
-    let context = Line::from(vec![
+    let mut context_spans = Vec::new();
+    if let Some(profile_menu) = &self.profile_menu {
+      let mut badge_style = Style::default().add_modifier(Modifier::BOLD);
+      if let Some(color) = profile_menu.active.color {
+        badge_style = badge_style.fg(color.as_ratatui_color());
+      }
+      context_spans.push(Span::styled(format!("[{}]", profile_menu.active.label), badge_style));
+      context_spans.push(Span::from(" "));
+    }
+    context_spans.extend([
       Span::from(&self.report),
       Span::from(" "),
       Span::from("["),
@@ -514,6 +548,7 @@ impl TaskwarriorTui {
       }),
       Span::from("]"),
     ]);
+    let context = Line::from(context_spans);
     let tabs = Tabs::new(tab_names)
       .block(navbar_block.clone())
       .select(selected_tab)
@@ -1022,6 +1057,19 @@ impl TaskwarriorTui {
         );
         self.draw_report_menu(f, 80, 50);
       }
+      Action::ProfileMenu => {
+        self.draw_command(
+          f,
+          rects[1],
+          self.filter.as_str(),
+          ("Filter Tasks".into(), None),
+          Self::get_position(&self.filter),
+          false,
+          self.error.clone(),
+          None,
+        );
+        self.draw_profile_menu(f, 70, 50);
+      }
       Action::DonePrompt => {
         let label = if task_ids.len() > 1 {
           format!("Done Tasks {}?", task_ids.join(","))
@@ -1312,6 +1360,92 @@ impl TaskwarriorTui {
       .widths(&constraints);
 
     f.render_stateful_widget(t, chunks[1], &mut self.reports.table_state);
+  }
+
+  fn draw_profile_menu(&mut self, f: &mut Frame, percent_x: u16, percent_y: u16) {
+    let Some(menu) = &self.profile_menu else {
+      return;
+    };
+    let area = centered_rect(percent_x, percent_y, f.area());
+    f.render_widget(Clear, area);
+    let chunks = Layout::default()
+      .direction(Direction::Vertical)
+      .constraints([Constraint::Length(3), Constraint::Min(0)])
+      .split(area);
+
+    let search_text = format!(" {}", menu.search);
+    let cursor_x = chunks[0].x + 2 + menu.search.chars().count() as u16;
+    f.render_widget(
+      Paragraph::new(search_text).block(
+        Block::default()
+          .borders(Borders::ALL)
+          .border_type(BorderType::Rounded)
+          .title(Span::styled("Profile  (type to filter)", Style::default().add_modifier(Modifier::BOLD))),
+      ),
+      chunks[0],
+    );
+    f.set_cursor_position(Position {
+      x: cursor_x.min(chunks[0].x + chunks[0].width.saturating_sub(2)),
+      y: chunks[0].y + 1,
+    });
+
+    let indices = menu.filtered_indices();
+    let selected = menu.table_state.current_selection().unwrap_or(0);
+    let headers = ["Name", "Label", "Current"];
+    let filtered_rows: Vec<Vec<String>> = indices
+      .iter()
+      .map(|&index| {
+        let profile = &menu.profiles[index];
+        vec![
+          profile.name.clone(),
+          profile.label.clone(),
+          if profile.name == menu.active.name {
+            "yes".to_string()
+          } else {
+            String::new()
+          },
+        ]
+      })
+      .collect();
+    let widths = self.calculate_widths(
+      &filtered_rows,
+      &headers.iter().map(|header| header.to_string()).collect::<Vec<_>>(),
+      chunks[1].width,
+    );
+    let constraints: Vec<Constraint> = widths
+      .iter()
+      .map(|width| Constraint::Length((*width).try_into().unwrap_or(chunks[1].width)))
+      .collect();
+    let rows: Vec<Row<std::slice::Iter<String>>> = filtered_rows
+      .iter()
+      .map(|row| {
+        let style = if row[2] == "yes" {
+          Style::default().add_modifier(Modifier::BOLD)
+        } else {
+          Style::default()
+        };
+        Row::StyledData(row.iter(), style)
+      })
+      .collect();
+    let table = Table::new(headers.iter(), rows.into_iter())
+      .block(Block::default().borders(Borders::ALL).border_type(BorderType::Rounded))
+      .header_style(
+        self
+          .config
+          .color
+          .get("color.label")
+          .copied()
+          .unwrap_or_default()
+          .add_modifier(Modifier::UNDERLINED),
+      )
+      .highlight_style(Style::default().add_modifier(Modifier::BOLD))
+      .highlight_symbol(&self.config.uda_selection_indicator)
+      .widths(&constraints);
+
+    if let Some(menu) = &mut self.profile_menu {
+      menu.table_state.select(if filtered_rows.is_empty() { None } else { Some(selected) });
+      f.render_stateful_widget(table, chunks[1], &mut menu.table_state);
+    }
   }
 
   fn draw_completion_pop_up(&mut self, f: &mut Frame, rect: Rect, cursor_position: usize) {
@@ -3036,6 +3170,18 @@ impl TaskwarriorTui {
   }
 
   pub async fn handle_input(&mut self, input: KeyCode) -> Result<()> {
+    let can_open_profile_menu =
+      self.profile_menu.is_some() && matches!(self.mode, Mode::Tasks(Action::Report) | Mode::Projects | Mode::Timesheet | Mode::Calendar);
+    if can_open_profile_menu && input == self.keyconfig.profile_menu {
+      self.previous_mode = Some(self.mode.clone());
+      if let Some(menu) = &mut self.profile_menu {
+        menu.search.clear();
+        menu.select_active();
+      }
+      self.mode = Mode::Tasks(Action::ProfileMenu);
+      return Ok(());
+    }
+
     match self.mode {
       Mode::Tasks(_) => {
         self.handle_input_by_task_mode(input).await?;
@@ -3593,6 +3739,43 @@ impl TaskwarriorTui {
               self.maybe_autoselect_report_menu().await?;
             }
             _ => {}
+          }
+        }
+        Action::ProfileMenu => {
+          if input == KeyCode::Ctrl('c') {
+            self.exit_reason = ExitReason::Quit;
+            self.should_quit = true;
+          } else if input == KeyCode::Esc || input == self.keyconfig.quit {
+            self.mode = self.previous_mode.take().unwrap_or(Mode::Tasks(Action::Report));
+          } else if input == KeyCode::Char('\n') || input == self.keyconfig.select {
+            if let Some(menu) = &self.profile_menu
+              && let Some(selected) = menu.selected_profile()
+            {
+              if let Some(exit_reason) = exit_reason_for_profile_selection(&menu.active.name, &selected.name) {
+                self.exit_reason = exit_reason;
+                self.should_quit = true;
+              } else {
+                self.mode = self.previous_mode.take().unwrap_or(Mode::Tasks(Action::Report));
+              }
+            }
+          } else if input == KeyCode::Down || input == self.keyconfig.down {
+            if let Some(menu) = &mut self.profile_menu {
+              menu.next();
+            }
+          } else if input == KeyCode::Up || input == self.keyconfig.up {
+            if let Some(menu) = &mut self.profile_menu {
+              menu.previous();
+            }
+          } else if input == KeyCode::Backspace || input == KeyCode::Ctrl('h') {
+            if let Some(menu) = &mut self.profile_menu {
+              menu.search.pop();
+              menu.table_state.select(if menu.filtered_indices().is_empty() { None } else { Some(0) });
+            }
+          } else if let KeyCode::Char(character) = input
+            && let Some(menu) = &mut self.profile_menu
+          {
+            menu.search.push(character);
+            menu.table_state.select(if menu.filtered_indices().is_empty() { None } else { Some(0) });
           }
         }
         Action::HelpPopup => {
@@ -4572,6 +4755,15 @@ mod tests {
       view.push('\n');
     }
     view
+  }
+
+  #[test]
+  fn profile_selection_returns_switch_reason_only_for_another_profile() {
+    assert_eq!(exit_reason_for_profile_selection("work", "work"), None);
+    assert_eq!(
+      exit_reason_for_profile_selection("work", "personal"),
+      Some(ExitReason::SwitchProfile("personal".to_string()))
+    );
   }
 
   #[test]

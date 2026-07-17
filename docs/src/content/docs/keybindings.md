@@ -75,6 +75,8 @@ Keybindings for task report:
 
     R: report switcher menu              - Open report switcher menu
 
+    p: profile switcher menu             - Open profile switcher menu
+
     ?: help                              - Help menu
 
 Keybindings for filter / command prompt:
@@ -128,6 +130,14 @@ Keybindings for report switcher:
     k: {selected-=1}                     - Move back a report
 
     Enter: task report {selected}        - Select highlighted report
+
+Keybindings for profile switcher:
+
+    j: {selected+=1}                     - Move forward a profile
+
+    k: {selected-=1}                     - Move back a profile
+
+    Enter: select {profile}              - Switch to highlighted profile
 
 Keybindings for calendar:
 

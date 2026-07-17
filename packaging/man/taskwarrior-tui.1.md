@@ -4,23 +4,40 @@
 <!-- To generate the roff version, run `mise run taskwarrior-tui:man`, -->
 <!-- and the man page will be written to `packaging/man/taskwarrior-tui.1`. -->
 
-
-NAME
-====
+# NAME
 
 taskwarrior-tui — A terminal user interface for taskwarrior (https://github.com/kdheepak/taskwarrior-tui)
 
+# SYNOPSIS
 
-SYNOPSIS
-========
-
-`taskwarrior-tui`
+`taskwarrior-tui` [`--profile NAME`] [`--report STRING`]
 
 **`taskwarrior-tui`** is a terminal user interface for `taskwarrior`.
 
+# OPTIONS
 
-EXAMPLES
-========
+`-p`, `--profile NAME`
+: Select a configured Taskwarrior profile. This option conflicts with `--taskrc` and `--taskdata`.
+
+`--list-profiles`
+: List configured profile names, labels, and the default profile, then exit.
+
+`--taskrc FILE`
+: Set the Taskwarrior configuration file through `TASKRC` when no profile is selected.
+
+`--taskdata FOLDER`
+: Set the Taskwarrior data directory through `TASKDATA` when no profile is selected.
+
+`-c`, `--config FOLDER`
+: Set the taskwarrior-tui configuration directory containing `profiles.toml`.
+
+`-d`, `--data FOLDER`
+: Set the taskwarrior-tui data directory used for logs and history.
+
+`-r`, `--report STRING`
+: Set the default report.
+
+# EXAMPLES
 
 `taskwarrior-tui`
 : Starts a terminal user interface for `taskwarrior`.
@@ -28,9 +45,10 @@ EXAMPLES
 `alias tt=taskwarrior-tui`
 : Add the above to your dotfiles to use `tt` to start `taskwarrior-tui`.
 
-KEYBINDINGS
-===========
+`taskwarrior-tui --profile work`
+: Start with the configured `work` profile. Profiles select isolated Taskwarrior databases; they do not filter synchronization by project.
 
+# KEYBINDINGS
 
 Keybindings:
 
@@ -38,206 +56,210 @@ Keybindings:
 : Exit current action
 
 `]`
-: Next view                         - Go to next view
+: Next view - Go to next view
 
 `[`
-: Previous view                     - Go to previous view
-
+: Previous view - Go to previous view
 
 Keybindings for task report:
 
 `/`
-: task {string}                     - Filter task report
+: task {string} - Filter task report
 
 `a`
-: task add {string}                 - Add new task
+: task add {string} - Add new task
 
 `d`
-: task {selected} done              - Mark task as done
+: task {selected} done - Mark task as done
 
 `e`
-: task {selected} edit              - Open selected task in editor
+: task {selected} edit - Open selected task in editor
 
 `j`
-: {selected+=1}                     - Move down in task report
+: {selected+=1} - Move down in task report
 
 `k`
-: {selected-=1}                     - Move up in task report
+: {selected-=1} - Move up in task report
 
 `J`
-: {selected+=pageheight}            - Move page down in task report
+: {selected+=pageheight} - Move page down in task report
 
 `K`
-: {selected-=pageheight}            - Move page up in task report
+: {selected-=pageheight} - Move page up in task report
 
 `g`
-: {selected=first}                  - Go to top
+: {selected=first} - Go to top
 
 `G`
-: {selected=last}                   - Go to bottom
+: {selected=last} - Go to bottom
 
 `l`
-: task log {string}                 - Log new task
+: task log {string} - Log new task
 
 `m`
-: task {selected} modify {string}   - Modify selected task
+: task {selected} modify {string} - Modify selected task
 
 `q`
-: exit                              - Quit
+: exit - Quit
 
 `s`
-: task {selected} start/stop        - Toggle start and stop
+: task {selected} start/stop - Toggle start and stop
 
 `t`
-: task {selected} +{tag}/-{tag}     - Toggle {uda.taskwarrior-tui.quick-tag.name} (default: `next`)
+: task {selected} +{tag}/-{tag} - Toggle {uda.taskwarrior-tui.quick-tag.name} (default: `next`)
 
 `u`
-: task undo                         - Undo
+: task undo - Undo
 
 `v`
-: {toggle mark on selected}         - Toggle mark on selected
+: {toggle mark on selected} - Toggle mark on selected
 
 `V`
-: {toggle marks on all tasks}       - Toggle marks on all tasks in current filter report
+: {toggle marks on all tasks} - Toggle marks on all tasks in current filter report
 
 `x`
-: task delete {selected}            - Delete
+: task delete {selected} - Delete
 
 `z`
-: toggle task info                  - Toggle task info view
+: toggle task info - Toggle task info view
 
 `A`
 : task {selected} annotate {string} - Annotate current task
 
 Ctrl-e
-: scroll down task details          - Scroll task details view down one line
+: scroll down task details - Scroll task details view down one line
 
 Ctrl-y
-: scroll up task details            - Scroll task details view up one line
-
+: scroll up task details - Scroll task details view up one line
 
 `!`
-: {string}                          - Custom shell command
+: {string} - Custom shell command
 
 `1-9`
-: {string}                          - Run user defined shortcuts
+: {string} - Run user defined shortcuts
 
 `:`
-: {task id}                         - Jump to task id
+: {task id} - Jump to task id
 
 `c`
-: context switcher menu             - Open context switcher menu
+: context switcher menu - Open context switcher menu
 
 `R`
-: report switcher menu              - Open report switcher menu
+: report switcher menu - Open report switcher menu
+
+`p`
+: profile switcher menu - Open profile switcher menu
 
 `?`
-: help                              - Help menu
-
+: help - Help menu
 
 Keybindings for filter / command prompt:
 
 `Ctrl + f | Right`
-: move forward                      - Move forward one character
+: move forward - Move forward one character
 
 `Ctrl + b | Left`
-: move backward                     - Move backward one character
+: move backward - Move backward one character
 
 `Ctrl + h | Backspace`
-: backspace                         - Delete one character back
+: backspace - Delete one character back
 
 `Ctrl + d | Delete`
-: delete                            - Delete one character forward
+: delete - Delete one character forward
 
 `Ctrl + a | Home`
-: home                              - Go to the beginning of line
+: home - Go to the beginning of line
 
 `Ctrl + e | End`
-: end                               - Go to the end of line
+: end - Go to the end of line
 
 `Ctrl + k`
-: delete to end                     - Delete to the end of line
+: delete to end - Delete to the end of line
 
 `Ctrl + u`
-: delete to beginning               - Delete to the beginning of line
+: delete to beginning - Delete to the beginning of line
 
 `Ctrl + w`
-: delete previous word              - Delete previous word
+: delete previous word - Delete previous word
 
 `Alt + d`
-: delete next word                  - Delete next word
+: delete next word - Delete next word
 
 `Alt + b`
-: move to previous word             - Move to previous word
+: move to previous word - Move to previous word
 
 `Alt + f`
-: move to next word                 - Move to next word
+: move to next word - Move to next word
 
 `Alt + t`
-: transpose words                   - Transpose words
+: transpose words - Transpose words
 
 `Up`
-: scroll history                    - Go backward in history matching from beginning of line to cursor
+: scroll history - Go backward in history matching from beginning of line to cursor
 
 `Down`
-: scroll history                    - Go forward in history matching from beginning of line to cursor
+: scroll history - Go forward in history matching from beginning of line to cursor
 
 `TAB | Ctrl + n`
-: tab complete                      - Open tab completion and selection first element OR cycle to next element
+: tab complete - Open tab completion and selection first element OR cycle to next element
 
 `BACKTAB | Ctrl + p`
-: tab complete                      - Cycle to previous element
-
+: tab complete - Cycle to previous element
 
 Keybindings for context switcher:
 
 `j`
-: {selected+=1}                     - Move forward a context
+: {selected+=1} - Move forward a context
 
 `k`
-: {selected-=1}                     - Move back a context
-
+: {selected-=1} - Move back a context
 
 Keybindings for report switcher:
 
 `j`
-: {selected+=1}                     - Move forward a report
+: {selected+=1} - Move forward a report
 
 `k`
-: {selected-=1}                     - Move back a report
+: {selected-=1} - Move back a report
 
+Keybindings for profile switcher:
+
+`j`
+: {selected+=1} - Move forward a profile
+
+`k`
+: {selected-=1} - Move back a profile
+
+`Enter`
+: Select the highlighted profile
 
 Keybindings for calendar:
 
 `j`
-: {selected+=1}                     - Move forward a year in calendar
+: {selected+=1} - Move forward a year in calendar
 
 `k`
-: {selected-=1}                     - Move back a year in calendar
+: {selected-=1} - Move back a year in calendar
 
 `J`
-: {selected+=10}                    - Move forward a decade in calendar
+: {selected+=10} - Move forward a decade in calendar
 
 `K`
-: {selected-=10}                    - Move back a decade in calendar
+: {selected-=10} - Move back a decade in calendar
 
-ENVIRONMENT
-===========
+# ENVIRONMENT
 
 `TASKWARRIOR_TUI_TASKWARRIOR_CLI`
 : Path to the `task` executable. Defaults to `task` (resolved via `PATH`).
-  Set this to use a non-standard installation of Taskwarrior, e.g.
-  `TASKWARRIOR_TUI_TASKWARRIOR_CLI=/usr/local/bin/task taskwarrior-tui`.
+Set this to use a non-standard installation of Taskwarrior, e.g.
+`TASKWARRIOR_TUI_TASKWARRIOR_CLI=/usr/local/bin/task taskwarrior-tui`.
 
-EXIT STATUSES
-=============
+# EXIT STATUSES
 
 0
 : If everything goes OK.
 
-
-AUTHOR
-======
+# AUTHOR
 
 `taskwarrior-tui` is maintained by Dheepak 'kdheepak' Krishnamurthy and other contributors.
 

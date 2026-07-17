@@ -12,6 +12,14 @@ description: Launch taskwarrior-tui and get to a usable keyboard workflow quickl
 
 3. Use Vim-like keys to navigate your task list. Press `?` for more information.
 
+If you configured [named profiles](./configuration/advanced/#named-profiles), select one at launch:
+
+```bash
+taskwarrior-tui --profile work
+```
+
+Run `taskwarrior-tui --list-profiles` to see available profiles. The active profile is shown in the navigation bar, and `p` opens the profile switcher.
+
 _Tip_: alias `tt` to `taskwarrior-tui`.
 
 Add the following to your shell profile such as `~/.bashrc` or `~/.zshrc`:

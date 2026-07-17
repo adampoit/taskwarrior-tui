@@ -21,7 +21,7 @@ pub fn generate_cli_app() -> clap::Command {
         .short('c')
         .long("config")
         .value_name("FOLDER")
-        .help("Sets the config folder for taskwarrior-tui (currently not used)")
+        .help("Sets the config folder for taskwarrior-tui")
         .action(clap::ArgAction::Set),
     )
     .arg(
@@ -37,6 +37,21 @@ pub fn generate_cli_app() -> clap::Command {
         .value_name("FILE")
         .help("Sets the .taskrc file using the TASKRC environment variable for taskwarrior")
         .action(clap::ArgAction::Set),
+    )
+    .arg(
+      Arg::new("profile")
+        .short('p')
+        .long("profile")
+        .value_name("NAME")
+        .help("Selects a configured Taskwarrior profile")
+        .conflicts_with_all(["taskrc", "taskdata"])
+        .action(clap::ArgAction::Set),
+    )
+    .arg(
+      Arg::new("list-profiles")
+        .long("list-profiles")
+        .help("Lists configured Taskwarrior profiles and exits")
+        .action(clap::ArgAction::SetTrue),
     )
     .arg(
       Arg::new("report")

@@ -17,12 +17,15 @@ _taskwarrior-tui() {
     _arguments "${_arguments_options[@]}" : \
 '-d+[Sets the data folder for taskwarrior-tui]:FOLDER:_default' \
 '--data=[Sets the data folder for taskwarrior-tui]:FOLDER:_default' \
-'-c+[Sets the config folder for taskwarrior-tui (currently not used)]:FOLDER:_default' \
-'--config=[Sets the config folder for taskwarrior-tui (currently not used)]:FOLDER:_default' \
+'-c+[Sets the config folder for taskwarrior-tui]:FOLDER:_default' \
+'--config=[Sets the config folder for taskwarrior-tui]:FOLDER:_default' \
 '--taskdata=[Sets the .task folder using the TASKDATA environment variable for taskwarrior]:FOLDER:_default' \
 '--taskrc=[Sets the .taskrc file using the TASKRC environment variable for taskwarrior]:FILE:_default' \
+'(--taskrc --taskdata)-p+[Selects a configured Taskwarrior profile]:NAME:_default' \
+'(--taskrc --taskdata)--profile=[Selects a configured Taskwarrior profile]:NAME:_default' \
 '-r+[Sets default report]:STRING:_default' \
 '--report=[Sets default report]:STRING:_default' \
+'--list-profiles[Lists configured Taskwarrior profiles and exits]' \
 '-h[Print help]' \
 '--help[Print help]' \
 '-V[Print version]' \

@@ -1,78 +1,86 @@
+# shellcheck disable=SC2207 # Generated completion intentionally splits compgen output.
 _taskwarrior-tui() {
-    local i cur prev opts cmd
-    COMPREPLY=()
-    if [[ "${BASH_VERSINFO[0]}" -ge 4 ]]; then
-        cur="$2"
-    else
-        cur="${COMP_WORDS[COMP_CWORD]}"
-    fi
-    prev="$3"
-    cmd=""
-    opts=""
+	local i cur prev opts cmd
+	COMPREPLY=()
+	if [[ "${BASH_VERSINFO[0]}" -ge 4 ]]; then
+		cur="$2"
+	else
+		cur="${COMP_WORDS[COMP_CWORD]}"
+	fi
+	prev="$3"
+	cmd=""
+	opts=""
 
-    for i in "${COMP_WORDS[@]:0:COMP_CWORD}"
-    do
-        case "${cmd},${i}" in
-            ",$1")
-                cmd="taskwarrior__tui"
-                ;;
-            *)
-                ;;
-        esac
-    done
+	for i in "${COMP_WORDS[@]:0:COMP_CWORD}"; do
+		case "${cmd},${i}" in
+		",$1")
+			cmd="taskwarrior__tui"
+			;;
+		*)
+			;;
+		esac
+	done
 
-    case "${cmd}" in
-        taskwarrior__tui)
-            opts="-d -c -r -h -V --data --config --taskdata --taskrc --report --help --version"
-            if [[ ${cur} == -* || ${COMP_CWORD} -eq 1 ]] ; then
-                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
-                return 0
-            fi
-            case "${prev}" in
-                --data)
-                    COMPREPLY=($(compgen -f "${cur}"))
-                    return 0
-                    ;;
-                -d)
-                    COMPREPLY=($(compgen -f "${cur}"))
-                    return 0
-                    ;;
-                --config)
-                    COMPREPLY=($(compgen -f "${cur}"))
-                    return 0
-                    ;;
-                -c)
-                    COMPREPLY=($(compgen -f "${cur}"))
-                    return 0
-                    ;;
-                --taskdata)
-                    COMPREPLY=($(compgen -f "${cur}"))
-                    return 0
-                    ;;
-                --taskrc)
-                    COMPREPLY=($(compgen -f "${cur}"))
-                    return 0
-                    ;;
-                --report)
-                    COMPREPLY=($(compgen -f "${cur}"))
-                    return 0
-                    ;;
-                -r)
-                    COMPREPLY=($(compgen -f "${cur}"))
-                    return 0
-                    ;;
-                *)
-                    COMPREPLY=()
-                    ;;
-            esac
-            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
-            return 0
-            ;;
-    esac
+	case "${cmd}" in
+	taskwarrior__tui)
+		opts="-d -c -p -r -h -V --data --config --taskdata --taskrc --profile --list-profiles --report --help --version"
+		if [[ ${cur} == -* || ${COMP_CWORD} -eq 1 ]]; then
+			COMPREPLY=($(compgen -W "${opts}" -- "${cur}"))
+			return 0
+		fi
+		case "${prev}" in
+		--data)
+			COMPREPLY=($(compgen -f "${cur}"))
+			return 0
+			;;
+		-d)
+			COMPREPLY=($(compgen -f "${cur}"))
+			return 0
+			;;
+		--config)
+			COMPREPLY=($(compgen -f "${cur}"))
+			return 0
+			;;
+		-c)
+			COMPREPLY=($(compgen -f "${cur}"))
+			return 0
+			;;
+		--taskdata)
+			COMPREPLY=($(compgen -f "${cur}"))
+			return 0
+			;;
+		--taskrc)
+			COMPREPLY=($(compgen -f "${cur}"))
+			return 0
+			;;
+		--profile)
+			COMPREPLY=($(compgen -f "${cur}"))
+			return 0
+			;;
+		-p)
+			COMPREPLY=($(compgen -f "${cur}"))
+			return 0
+			;;
+		--report)
+			COMPREPLY=($(compgen -f "${cur}"))
+			return 0
+			;;
+		-r)
+			COMPREPLY=($(compgen -f "${cur}"))
+			return 0
+			;;
+		*)
+			COMPREPLY=()
+			;;
+		esac
+		COMPREPLY=($(compgen -W "${opts}" -- "${cur}"))
+		return 0
+		;;
+	esac
 }
 
 if [[ "${BASH_VERSINFO[0]}" -eq 4 && "${BASH_VERSINFO[1]}" -ge 4 || "${BASH_VERSINFO[0]}" -gt 4 ]]; then
-    complete -F _taskwarrior-tui -o nosort -o bashdefault -o default taskwarrior-tui
+	complete -F _taskwarrior-tui -o nosort -o bashdefault -o default taskwarrior-tui
 else
-    complete -F _taskwarrior-tui -o bashdefault -o default taskwarrior-tui
+	complete -F _taskwarrior-tui -o bashdefault -o default taskwarrior-tui
 fi

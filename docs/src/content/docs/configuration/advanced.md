@@ -5,6 +5,52 @@ description: Configure taskwarrior-tui report behavior, styles, shortcuts, backg
 
 `taskwarrior-tui` parses the output of `task show` to get configuration data. This allows `taskwarrior-tui` to use the same defaults as `taskwarrior` and configure additional options as required.
 
+## Named Profiles
+
+Profiles bind a name to one Taskwarrior configuration file and one data directory. They are stored outside any Taskwarrior database in `profiles.toml` under the taskwarrior-tui configuration directory:
+
+```toml
+# ~/.config/taskwarrior-tui/profiles.toml
+default = "work"
+
+[profiles.work]
+taskrc = "~/.config/task/work.taskrc"
+taskdata = "~/.local/share/task/work"
+label = "Work"
+color = "yellow"
+
+[profiles.personal]
+taskrc = "~/.config/task/personal.taskrc"
+taskdata = "~/.local/share/task/personal"
+label = "Personal"
+color = "green"
+```
+
+Every profile requires both `taskrc` and `taskdata`. Relative paths are resolved from the directory containing `profiles.toml`; paths beginning with `~/` are resolved from your home directory. `taskrc` must be a readable file. The `taskdata` directory may be absent, but its parent must be creatable.
+
+`label` is optional and defaults to the profile name. `color` is optional and affects only the profile badge. Supported colors are `black`, `red`, `green`, `yellow`, `blue`, `magenta`, `cyan`, `gray`, `dark-gray`, `light-red`, `light-green`, `light-yellow`, `light-blue`, `light-magenta`, `light-cyan`, and `white`.
+
+The configuration directory defaults to `${XDG_CONFIG_HOME:-~/.config}/taskwarrior-tui`. Override it with `--config <FOLDER>` or `TASKWARRIOR_TUI_CONFIG`.
+
+Select and inspect profiles with:
+
+```bash
+taskwarrior-tui --profile work
+taskwarrior-tui --list-profiles
+```
+
+Selection precedence is:
+
+1. `--profile <NAME>`.
+2. `default` in `profiles.toml`.
+3. Legacy Taskwarrior path behavior when no profiles file exists or a direct `--taskrc`/`--taskdata` option is used.
+
+`--profile` conflicts with `--taskrc` and `--taskdata`. A selected profile authoritatively replaces inherited `TASKRC` and `TASKDATA` values. Invalid configuration, an unknown profile, or a profile file without a default fails instead of silently opening another database.
+
+The active profile appears in the navigation bar. Press the configured profile-menu key (default `p`) to search and switch profiles. Switching restores the terminal and starts a new taskwarrior-tui process so task rows, selections, undo state, reports, contexts, and background processes cannot cross the profile boundary.
+
+Profiles isolate databases; they do not selectively synchronize projects, tags, contexts, or reports. Store synchronization URLs and credentials in protected Taskwarrior configuration files or includes, never in `profiles.toml`. taskwarrior-tui does not run `task sync` automatically when switching.
+
 ## `taskrc` Configuration File Options
 
 Other `taskwarrior-tui` configuration options are possible using Taskwarrior user-defined attributes. All `taskwarrior-tui` specific configuration options begin with `uda.taskwarrior-tui.`. The following is the full list of options available and their default values if they are not defined in your `taskrc` file.
@@ -46,6 +92,7 @@ uda.taskwarrior-tui.context-menu.select-on-move=false
 uda.taskwarrior-tui.context-menu.close-on-select=true
 uda.taskwarrior-tui.report-menu.select-on-move=false
 uda.taskwarrior-tui.report-menu.close-on-select=true
+uda.taskwarrior-tui.keyconfig.profile-menu=p
 uda.taskwarrior-tui.tabs.change-focus-rotate=false
 uda.taskwarrior-tui.quick-tag.name=next
 # UI chrome styles (support all Taskwarrior color formats)
@@ -73,6 +120,8 @@ For the legacy `tasklist.vertical` option, `true` maps to `bottom` and `false` m
 ## Command-Line Options
 
 `-r` specifies a report to be shown and overrides `uda.taskwarrior-tui.task-report.next.filter` for that instance.
+
+`-p, --profile <NAME>` selects a named profile. `--list-profiles` prints configured names, labels, and the default profile, then exits.
 
 ## Configure Quick Tag
 

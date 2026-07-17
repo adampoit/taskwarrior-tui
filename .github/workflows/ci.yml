@@ -1,4 +1,9 @@
-on: [pull_request]
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+      - sync/integration
 
 name: CI
 
@@ -47,7 +52,6 @@ jobs:
       - run: mise run taskwarrior-tui:cargo-test
         env:
           RUST_BACKTRACE: full
-
 
   generate_coverage:
     uses: ./.github/workflows/generate_coverage.yml

@@ -25,6 +25,6 @@ jobs:
           node-version: "22"
 
       - name: Run patchlane promote
-        run: npx patchlane@0.4.0 promote
+        run: npx patchlane@0.4.1 promote
         env:
           EXPECTED_SYNC_SHA: ${{ github.event.workflow_run.head_sha }}

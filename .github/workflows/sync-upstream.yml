@@ -28,18 +28,14 @@ jobs:
   fork-sync:
     runs-on: ubuntu-latest
     steps:
-      - name: Create Patchlane token
-        id: patchlane-token
-        uses: actions/create-github-app-token@v3
+      - id: not-adam
+        uses: adampoit/not-adam@v1
         with:
-          client-id: ${{ vars.PATCHLANE_APP_CLIENT_ID }}
-          private-key: ${{ secrets.PATCHLANE_APP_PRIVATE_KEY }}
-          permission-contents: write
-          permission-workflows: write
+          private-key: ${{ secrets.NOT_ADAM_APP_PRIVATE_KEY }}
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          token: ${{ steps.patchlane-token.outputs.token }}
+          token: ${{ steps.not-adam.outputs.token }}
 
       - uses: actions/setup-node@v4
         with:
@@ -48,7 +44,7 @@ jobs:
       - name: Run patchlane sync
         run: npx patchlane@0.5.3 sync
         env:
-          GH_TOKEN: ${{ steps.patchlane-token.outputs.token }}
+          GH_TOKEN: ${{ steps.not-adam.outputs.token }}
           UPSTREAM_SOURCE: ${{ inputs.source }}
           PATCH_REFS: ${{ inputs.patch_refs }}
           NO_PUSH: ${{ inputs.no_push || false }}

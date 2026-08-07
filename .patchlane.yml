@@ -9,3 +9,5 @@ patchRefs:
   - patch/rust-toolchain
   - patch/profiles
 ciWorkflow: CI
+allowedWorkflows:
+  - ci.yml
